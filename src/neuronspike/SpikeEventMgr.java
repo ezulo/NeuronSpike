@@ -28,14 +28,27 @@ public class SpikeEventMgr {
     List<SpikeEvent> eventList;
     public void process(long time) {
         SpikeEvent cur;
-        
+        //iterate through eventList
+        int i = 0;
+        while (i < eventList.size()) {
+            cur = eventList.get(i);
+            if (cur.timeStamp == time) {
+                //send voltage to neuron and remove from list
+                cur.target.feedVoltage(time, cur.impulse, this);
+                eventList.remove(i);
+            }
+            else {
+                //check next index in list
+                i++;
+            }
+        }
     }
     public void queueSpike(Neuron n, long time, double impulse) {
         SpikeEvent e0 = new SpikeEvent(n, time, impulse);
-        eventQueue.add(e0);
+        eventList.add(e0);
     }
     public SpikeEventMgr() {
-        eventQueue = new LinkedList();
+        eventList = new LinkedList();
     }
 }
 

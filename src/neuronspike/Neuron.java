@@ -36,7 +36,13 @@ public class Neuron {
    private void neuronDecay(long time, double lambda) {
        //should be called when pertinent. e.g., neuron receiving voltage
        //lambda must be < 1.0
-       if (time == lastUpdated) return;
+       if (time == lastUpdated) {
+           return;
+       }
+       if (volts <= 0.001) {
+           volts = 0.0;
+           return;
+       }
        double deltaT = time - lastUpdated;
        double v1 = volts * Math.pow(lambda, deltaT);
        volts = v1;
@@ -44,8 +50,9 @@ public class Neuron {
        return;
    }
    public void feedVoltage(long time, double inVolts, SpikeEventMgr sEM) {
-       //simple voltage feed. should only be called by spike event manager.
-       neuronDecay(time, 0.9);
+       //simple voltage feed. public but should mainly be used only by event mgr
+       neuronDecay(time, 0.8);
+       lastUpdated = time;
        volts += inVolts;
        
        //check for spiking behavior
