@@ -3,6 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+/*
+Look into: interfacing for Neuron
+*/
+
 package neuronspike;
 import java.util.List;
 import java.util.ArrayList;
@@ -18,16 +23,20 @@ public class Neuron {
    double spike_threshold;
    long lastUpdated;
    long delay;
-   boolean spiking;
+   long last_spike;
+   int[] place = {-1, -1};
    
-   public Neuron(long time, double s_t, long d) {
+   public String  metadata[] = new String[]{};
+   
+   public Neuron(long time, double s_t, long d, int layer_num, int neu_num) {
        outputNeurons = new ArrayList<>();
        weights = new ArrayList<>();
        volts = 0;
        spike_threshold = s_t;
        delay = d;
        lastUpdated = time;
-       spiking = false;
+       place[0] = layer_num;
+       place[1] = neu_num;
    }
    public void attachNeuron(Neuron n, double w) {
        outputNeurons.add(n);
@@ -56,16 +65,27 @@ public class Neuron {
        volts += inVolts;
        
        //check for spiking behavior
-       if (volts >= spike_threshold) {
+       //if currently spiking, do nothing to it
+       if (last_spike < time) {
+            if (volts >= spike_threshold) {
+                last_spike = time;
+                sEM.addToLedger(this);
+                volts = 0.0;
+                //queue voltage signals to all outputs
+                for (int i = 0; i < outputNeurons.size(); i++) {
+                     sEM.queueSpike(outputNeurons.get(i),
+                         time + outputNeurons.get(i).delay,
+                         weights.get(i));
+                }
+            }
+       }
+       else {
            volts = 0.0;
-           //queue voltage signals to all outputs
-           for (int i = 0; i < outputNeurons.size(); i++) {
-                sEM.queueSpike(outputNeurons.get(i),
-                    time + outputNeurons.get(i).delay,
-                    weights.get(i));
-           }
        }
        return;
+   }
+   public int[] getLocation() {
+       return this.place;
    }
 
 }

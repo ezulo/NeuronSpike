@@ -5,7 +5,7 @@
  */
 package neuronspike;
 import java.util.List;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import neuronspike.Neuron;
 
 /**
@@ -26,6 +26,14 @@ class SpikeEvent {
 
 public class SpikeEventMgr {
     List<SpikeEvent> eventList;
+    List<Neuron> spikeLedger;
+    private static SpikeEventMgr instance = null;
+    
+    public static SpikeEventMgr getInstance() {
+        if (instance == null) instance = new SpikeEventMgr();
+        return instance;
+    }
+    
     public void process(long time) {
         SpikeEvent cur;
         //iterate through eventList
@@ -47,8 +55,22 @@ public class SpikeEventMgr {
         SpikeEvent e0 = new SpikeEvent(n, time, impulse);
         eventList.add(e0);
     }
-    public SpikeEventMgr() {
-        eventList = new LinkedList();
+    
+    public void addToLedger(Neuron n) {
+        spikeLedger.add(n);
+    }
+    
+    public List<Neuron> getLedger() {
+        List<Neuron> l = new ArrayList();
+        for (int i = 0; i < this.spikeLedger.size(); i++) {
+            l.add(this.spikeLedger.get(i));
+        }
+        this.spikeLedger.clear();
+        return l;
+    }
+    private SpikeEventMgr() {
+        eventList = new ArrayList();
+        spikeLedger = new ArrayList();
     }
 }
 
