@@ -13,7 +13,7 @@ public class NeuronNet {
     static List<Neuron> inputLayer;
     static List<Neuron> outputLayer;
     static List<Neuron> oscillators;
-    static NetPlot nplot;
+    static List<NetPlot> nplots;
     static SpikeEventMgr sEM;
     static long global_time;
     static double global_spike_threshold;
@@ -31,9 +31,6 @@ public class NeuronNet {
             int wavelength
     ) {
         //netplot stuff
-        int x_size = 50;
-        int y_size = layerNeuronCount.length;
-        nplot = new NetPlot("A neuron layer", "Time", "Neuron", x_size, y_size);
         layerList = new ArrayList();
         oscillators = new ArrayList();
         global_time = 0;
@@ -82,6 +79,23 @@ public class NeuronNet {
             }
         }
         
+        //create plots
+        nplots = new ArrayList();
+        NetPlot nplot;
+        int x_size, y_size;
+        x_size = 50;
+        for (int i = 0; i < layerList.size(); i++) {
+            List<Neuron> layer = layerList.get(i);
+            y_size = layer.size();
+            nplot = new NetPlot(
+                    "Layer " + i,
+                    "Time",
+                    "Neuron",
+                    x_size, y_size
+            );
+            nplots.add(nplot);
+        }
+        
         inputLayer = layerList.get(0);
         outputLayer = layerList.get(layerList.size() - 1);
         Neuron oscillator = new Neuron(global_time, 0.99, 1, -1, 0);
@@ -128,16 +142,21 @@ public class NeuronNet {
         System.out.println("");
     }
     
-    static void plotLayer(int layerNum) {
+    static void plotLayers() {
         List<Neuron> ledger = sEM.getLedger();
-        List<Neuron> layerLedger = new ArrayList();
-        for (int i = 0; i < ledger.size(); i++) {
-            Neuron n = ledger.get(i);
-            if (n.getLocation()[0] == layerNum) {
-                layerLedger.add(n);
+        List<Neuron> layerLedger;
+        NetPlot nplot;
+        for (int layerNum = 0; layerNum < layerList.size(); layerNum++) {
+            layerLedger = new ArrayList();
+            for (int i = 0; i < ledger.size(); i++) {
+                Neuron n = ledger.get(i);
+                if (n.getLocation()[0] == layerNum) {
+                    layerLedger.add(n);
+                }
             }
+            nplot = nplots.get(layerNum);
+            nplot.plotSpikes(layerLedger);
         }
-        nplot.plotSpikes(layerLedger);
     }
     
     public int[] getLayerMetadata() {
@@ -162,8 +181,7 @@ public class NeuronNet {
     private Neuron getNeuron(int l, int n) {
         //returns: nth neuron at layer l
         List<Neuron> nlayer = layerList.get(l);
-        Neuron neu = nlayer.get(n);
-        return neu;
+        return nlayer.get(n);
     }
     
     public void incrementTime() {
@@ -176,7 +194,7 @@ public class NeuronNet {
         }
         sEM.process(global_time);
         printState(global_time, outputLayer);
-        plotLayer(0);
+        plotLayers();
         global_time += 1;
     }
     

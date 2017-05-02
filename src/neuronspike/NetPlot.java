@@ -51,9 +51,9 @@ public class NetPlot {
     }
     
     private void addLimitPoints(int start) {
-        limits.add(start, 0);
+        limits.add(start, -1);
         limits.add(start, limit_y);
-        limits.add(start + cutoffInterval, 0);
+        limits.add(start + cutoffInterval, -1);
         limits.add(start + cutoffInterval, limit_y);
     }
     
@@ -62,12 +62,13 @@ public class NetPlot {
         
     }
 
-    public NetPlot(String l, String x, String y, int cutoff, int limit_y) {
+    public NetPlot(String l, String x, String y, int cutoff, int ybound) {
         label = l;
         x_label = x;
         y_label = y;
         spikes = new XYSeries("Spike");
         limits = new XYSeries("Limit");
+        limit_y = ybound;
         createDataset();
         createChart();
         frame = new ChartFrame("Neuron spiking", chart);
