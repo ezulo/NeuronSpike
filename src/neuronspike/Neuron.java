@@ -16,7 +16,7 @@ import java.util.ArrayList;
  *
  * @author eddie
  */
-public class Neuron {
+public abstract class Neuron {
    List<Neuron> outputNeurons;
    List<Float> weights;
    double volts;
@@ -24,19 +24,17 @@ public class Neuron {
    long lastUpdated;
    long delay;
    long last_spike;
-   int[] place = {-1, -1};
    
    public String  metadata[] = new String[]{};
    
-   public Neuron(long time, double s_t, long d, int layer_num, int neu_num) {
+   public Neuron(long time, double s_t, long d) {
+       //neuron classes:
        outputNeurons = new ArrayList<>();
        weights = new ArrayList<>();
        volts = 0;
        spike_threshold = s_t;
        delay = d;
        lastUpdated = time;
-       place[0] = layer_num;
-       place[1] = neu_num;
    }
    public void attachNeuron(Neuron n, double w) {
        outputNeurons.add(n);
@@ -56,7 +54,6 @@ public class Neuron {
        double v1 = volts * Math.pow(lambda, deltaT);
        volts = v1;
        lastUpdated = time;
-       return;
    }
    public void feedVoltage(long time, double inVolts, SpikeEventMgr sEM) {
        //simple voltage feed. public but should mainly be used only by event mgr
@@ -84,8 +81,6 @@ public class Neuron {
        }
        return;
    }
-   public int[] getLocation() {
-       return this.place;
-   }
+
 
 }

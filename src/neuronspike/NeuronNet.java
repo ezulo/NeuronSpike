@@ -9,10 +9,10 @@ import java.util.Random;
  */
 public class NeuronNet {
     
-    static List<List<Neuron>> layerList;
-    static List<Neuron> inputLayer;
-    static List<Neuron> outputLayer;
-    static List<Neuron> oscillators;
+    static List<List<GenericNeuron>> layerList;
+    static List<GenericNeuron> inputLayer;
+    static List<GenericNeuron> outputLayer;
+    static List<OscillatorNeuron> oscillators;
     static List<NetPlot> nplots;
     static SpikeEventMgr sEM;
     static long global_time;
@@ -20,6 +20,10 @@ public class NeuronNet {
     static long global_delay;
     static double[] global_weight_range;
     static long oscillator_wavelength;
+    
+    public enum OscillatorType {
+        CONSTANT, POISSON, PROBABILISTIC
+    }
     
     public NeuronNet(
             int numLayers, 
@@ -41,11 +45,11 @@ public class NeuronNet {
         
         //generate all layers, pop onto layer list
         for (int i = 0; i < numLayers; i++) {
-            List<Neuron> current_layer = new ArrayList();
+            List<GenericNeuron> current_layer = new ArrayList();
             //generate neurons
             for (int j = 0; j < layerNeuronCount[i]; j++) {
                 current_layer.add(
-                        new Neuron(
+                        new GenericNeuron(
                             global_time, global_spike_threshold, global_delay, i, j
                     )
                 );
@@ -55,7 +59,7 @@ public class NeuronNet {
             if (i != 0) {
                 Random rand = new Random();
                 //fetch previous layer
-                List<Neuron> previous_layer = layerList.get(i - 1);
+                List<GenericNeuron> previous_layer = layerList.get(i - 1);
                 //for every neuron in the previous layer...
                 for (int k = 0; k < layerNeuronCount[i - 1]; k++) {
                     //for every neuron in current layer...
@@ -85,7 +89,7 @@ public class NeuronNet {
         int x_size, y_size;
         x_size = 50;
         for (int i = 0; i < layerList.size(); i++) {
-            List<Neuron> layer = layerList.get(i);
+            List<GenericNeuron> layer = layerList.get(i);
             y_size = layer.size();
             nplot = new NetPlot(
                     "Layer " + i,
@@ -98,14 +102,6 @@ public class NeuronNet {
         
         inputLayer = layerList.get(0);
         outputLayer = layerList.get(layerList.size() - 1);
-        Neuron oscillator = new Neuron(global_time, 0.99, 1, -1, 0);
-        
-        for (int i = 0; i < layerNeuronCount[0]; i++) {
-            oscillator.attachNeuron(inputLayer.get(i), 1);
-        }
-        
-        oscillators.add(oscillator);
-        
         sEM = SpikeEventMgr.getInstance();
         launchConsole(this);
         
@@ -116,7 +112,7 @@ public class NeuronNet {
         panel = new ControlPanel(self);
     }
     
-    static void printState(long currentTime, List<Neuron> neuronList) {
+    static void printState(long currentTime, List<GenericNeuron> neuronList) {
         int i = 0;
         System.out.println("Time step: " + currentTime);
         Neuron cur;
@@ -130,7 +126,7 @@ public class NeuronNet {
     }
     
     static void printLedger(long currentTime) {
-        List<Neuron> ledger = sEM.getLedger();
+        List<GenericNeuron> ledger = sEM.getLedger();
         System.out.println("Spiked neurons for timestep " + currentTime + " : ");
         System.out.println("[");
         int[] place;
@@ -143,13 +139,13 @@ public class NeuronNet {
     }
     
     static void plotLayers() {
-        List<Neuron> ledger = sEM.getLedger();
-        List<Neuron> layerLedger;
+        List<GenericNeuron> ledger = sEM.getLedger();
+        List<GenericNeuron> layerLedger;
         NetPlot nplot;
         for (int layerNum = 0; layerNum < layerList.size(); layerNum++) {
             layerLedger = new ArrayList();
             for (int i = 0; i < ledger.size(); i++) {
-                Neuron n = ledger.get(i);
+                GenericNeuron n = ledger.get(i);
                 if (n.getLocation()[0] == layerNum) {
                     layerLedger.add(n);
                 }
@@ -168,8 +164,13 @@ public class NeuronNet {
         return d;
     }
     
-    public void addOscillator(int l, int n, double v) {
-        Neuron neuron = new Neuron(global_time, 0.99, 1, -1, 0);
+    public void addOscillator(int l, int n, double v, int type, double param) {
+        OscillatorNeuron neuron = new OscillatorNeuron(
+                global_time, 
+                0.99, 
+                1, 
+                type, 
+                param);
         neuron.attachNeuron(getNeuron(l,n),v);
         oscillators.add(neuron);
     }
@@ -178,20 +179,25 @@ public class NeuronNet {
         oscillators.clear();
     }
     
-    private Neuron getNeuron(int l, int n) {
+    private GenericNeuron getNeuron(int l, int n) {
         //returns: nth neuron at layer l
-        List<Neuron> nlayer = layerList.get(l);
+        List<GenericNeuron> nlayer = layerList.get(l);
         return nlayer.get(n);
+    }
+    
+    private void runOscillators() {
+        for (int i = 0; i < oscillators.size(); i++) {
+            OscillatorNeuron osc = oscillators.get(i);
+            if (osc.readyToFire()) {
+                sEM.queueSpike(osc, global_time, 1.0);
+            }
+        }
     }
     
     public void incrementTime() {
         //factor out auto-spiking
         //keep neuron exciting outside of the 
-        if (global_time % oscillator_wavelength == 0) {
-            for (int i = 0; i < oscillators.size(); i++) {
-                sEM.queueSpike(oscillators.get(i), global_time, 1.0);
-            }
-        }
+        runOscillators();
         sEM.process(global_time);
         printState(global_time, outputLayer);
         plotLayers();

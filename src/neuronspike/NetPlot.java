@@ -72,13 +72,13 @@ public class NetPlot {
         createDataset();
         createChart();
         frame = new ChartFrame("Neuron spiking", chart);
-        frame.setSize(400, 400);
         addLimitPoints(0);
+        frame.setSize(400, 400);
         frame.setVisible(true);
         cutoffInterval = cutoff;
     }
     
-    public void plotSpikes(List<Neuron> spikeList) {
+    public void plotSpikes(List<GenericNeuron> spikeList) {
         for (int i = 0; i < spikeList.size(); i++) {
             addPoint(cursor, spikeList.get(i).getLocation()[1]);
         }

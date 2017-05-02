@@ -6,7 +6,6 @@
 package neuronspike;
 import java.util.List;
 import java.util.ArrayList;
-import neuronspike.Neuron;
 
 /**
  *
@@ -26,7 +25,7 @@ class SpikeEvent {
 
 public class SpikeEventMgr {
     List<SpikeEvent> eventList;
-    List<Neuron> spikeLedger;
+    List<GenericNeuron> spikeLedger;
     private static SpikeEventMgr instance = null;
     
     public static SpikeEventMgr getInstance() {
@@ -57,11 +56,14 @@ public class SpikeEventMgr {
     }
     
     public void addToLedger(Neuron n) {
-        spikeLedger.add(n);
+        if (n instanceof GenericNeuron) {
+            GenericNeuron neuron = (GenericNeuron)n;
+            spikeLedger.add(neuron);
+        }
     }
     
-    public List<Neuron> getLedger() {
-        List<Neuron> l = new ArrayList();
+    public List<GenericNeuron> getLedger() {
+        List<GenericNeuron> l = new ArrayList();
         for (int i = 0; i < this.spikeLedger.size(); i++) {
             l.add(this.spikeLedger.get(i));
         }
