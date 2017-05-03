@@ -22,7 +22,7 @@ public class ControlPanel implements ActionListener {
     JTextField layerField;
     JTextField neuronField;
     JTextField paramField;
-    GridLayout layout = new GridLayout(6, 2);
+    GridLayout layout = new GridLayout(7, 2);
     
     private boolean boundCheck() {
         if ((layerCursor >= 0) && (layerCursor < subjectMeta.length)) {
@@ -43,7 +43,7 @@ public class ControlPanel implements ActionListener {
     private void setDefault() {
         layerField.setText("< Layer >");
         neuronField.setText("< Neuron >");
-        paramField.setText("< Param >");
+        paramField.setText("< Rate / Prob / Wavelength >");
     }
     
     public void actionPerformed(ActionEvent e) {
@@ -84,6 +84,17 @@ public class ControlPanel implements ActionListener {
                 );
             }
         }
+        else if ("Add Sine".equals(e.getActionCommand())) {
+            if (boundCheck()) {
+                subjectNet.addOscillator(
+                    layerCursor, 
+                    neuronCursor, 
+                    selectedV,
+                    2,
+                    param
+                );
+            }
+        }
     }
     
     public ControlPanel(NeuronNet net) {
@@ -100,14 +111,18 @@ public class ControlPanel implements ActionListener {
         b1.setActionCommand("Add Cont");
         JButton b2 = new JButton("Add Osc (Probabilistic)");
         b2.setActionCommand("Add Prob");
-        JButton b3 = new JButton("Clear Oscillators");
-        b3.setActionCommand("Clear");
+        JButton b3 = new JButton("Add Osc (Sine)");
+        b3.setActionCommand("Add Sine");
+        JButton b4 = new JButton("Clear Oscillators");
+        b4.setActionCommand("Clear");
         b1.addActionListener(this);
         b2.addActionListener(this);
         b3.addActionListener(this);
+        b4.addActionListener(this);
         controlPanel.add(b1);
         controlPanel.add(b2);
         controlPanel.add(b3);
+        controlPanel.add(b4);
         //ADD FIELDS
         layerField = new JTextField();
         layerField.setHorizontalAlignment(JTextField.CENTER);

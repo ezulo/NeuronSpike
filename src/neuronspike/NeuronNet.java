@@ -188,7 +188,7 @@ public class NeuronNet {
     private void runOscillators() {
         for (int i = 0; i < oscillators.size(); i++) {
             OscillatorNeuron osc = oscillators.get(i);
-            if (osc.readyToFire()) {
+            if (osc.readyToFire(global_time)) {
                 sEM.queueSpike(osc, global_time, 1.0);
             }
         }
