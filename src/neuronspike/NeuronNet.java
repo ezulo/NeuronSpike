@@ -1,7 +1,12 @@
 package neuronspike;
-import java.util.List;
+import java.awt.Container;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+
+import javax.swing.BoxLayout;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 /**
  *
@@ -84,6 +89,9 @@ public class NeuronNet {
         }
         
         //create plots
+        JFrame plots = new JFrame("Spike Plot");
+        Container panel = plots.getContentPane();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         nplots = new ArrayList();
         NetPlot nplot;
         int x_size, y_size;
@@ -98,7 +106,12 @@ public class NeuronNet {
                     x_size, y_size
             );
             nplots.add(nplot);
+            panel.add(nplot.getPanel());
         }
+        plots.pack();
+        plots.setVisible(true);
+        
+        
         
         inputLayer = layerList.get(0);
         outputLayer = layerList.get(layerList.size() - 1);

@@ -7,8 +7,10 @@
 package neuronspike;
 import java.util.List;
 
+import javax.swing.JPanel;
+
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartFrame;
+import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
@@ -16,16 +18,13 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import javafx.scene.chart.NumberAxis;
-
 /**
  *
  * @author ezuloaga
  */
 public class NetPlot {
-    
-    ChartFrame frame;
-    JFreeChart chart;
+
+	JFreeChart chart;
     XYSeries spikes;
     int cursor;
     int cutoffInterval;
@@ -56,9 +55,6 @@ public class NetPlot {
         series = new XYSeriesCollection();
         series.addSeries(spikes);
     	chart = createChart();
-        frame = new ChartFrame("Neuron spiking", chart);
-        frame.setSize(400, 400);
-        frame.setVisible(true);
         cutoffInterval = cutoff;
     }
     
@@ -77,9 +73,10 @@ public class NetPlot {
         // Remove too old points
         while (!spikes.isEmpty() && spikes.getDataItem(0).getX().doubleValue() < cursor - cutoffInterval)
         	spikes.remove(0);
-//        if (cursor % cutoffInterval == 0) {
-//            spikes.clear();
-//        }
+    }
+    
+    public JPanel getPanel(){
+    	return new ChartPanel(chart);
     }
     
 }
